@@ -6,11 +6,6 @@ type Player struct {
     Color
 }
 
-type Tile struct {
-    Piece
-    Empty bool
-}
-
 type Piece struct {
     Color
     Kind
@@ -26,6 +21,7 @@ const (
     Bishop
     Queen
     King
+    None
 )
 
 type Color bool
@@ -36,17 +32,17 @@ const (
 )
 
 func main() {
-    var board [64]Tile = initBoard()
+    var board [64]Piece = initBoard()
     drawBoard(board)
     Black.movePiece(&board, 11, 19)
     drawBoard(board)
 }
 
-func (player Color) movePiece(board *[64]Tile, pos int, newPos int) {
-    if !board[pos].Empty && board[pos].Piece.Color == player {
-        if (board[pos].Piece.ValidMoves & (1 << newPos)) > 0 {
+func (player Color) movePiece(board *[64]Piece, pos int, newPos int) {
+    if board[pos].Kind != None && board[pos].Color == player {
+        if (board[pos].ValidMoves & (1 << newPos)) > 0 {
             board[newPos] = board[pos]
-            board[pos].Empty = true
+            board[pos].Kind = None
         } else {
             fmt.Print("1")
         }
@@ -55,7 +51,8 @@ func (player Color) movePiece(board *[64]Tile, pos int, newPos int) {
     }
 }
 
-func findValidMoves(board [64]Tile, pos int) {
+//must check that tile is non-empty before use
+func findValidMoves(board [64]Piece, pos int) {
     board[pos].ValidMoves = 0
     piece := board[pos]
     switch piece.Kind {
@@ -67,24 +64,24 @@ func findValidMoves(board [64]Tile, pos int) {
         } else {
             colorDir = -1
         }
-        if piece.Color == Color.White && pos > 7 && pos < 16 && board[pos + 16].Empty {
+        if piece.Color == White && pos > 7 && pos < 16 && board[pos + 16].Kind == None {
             piece.ValidMoves |= 1 << (pos + 16)
-        } else if piece.Color == Color.Black && pos > 47 && pos < 56 && board[pos - 16].Empty {
+        } else if piece.Color == Black && pos > 47 && pos < 56 && board[pos - 16].Kind == None {
             piece.ValidMoves |= 1 << (pos - 16)
         }
-        if !board[pos + colorDir * 9].Empty && (pos + colorDir * 9) % 8 != 0 && piece.Color != board[pos + colorDir * 9].Color {
+        if board[pos + colorDir * 9].Kind != None && (pos + colorDir * 9) % 8 != 0 && piece.Color != board[pos + colorDir * 9].Color {
             piece.ValidMoves |= 1 << (pos + colorDir * 9)
         }
-        if !board[pos + colorDir * 9].Empty && pos % 8 != 0 && piece.Color != board[pos + colorDir * 7].Color {
+        if board[pos + colorDir * 9].Kind != None && pos % 8 != 0 && piece.Color != board[pos + colorDir * 7].Color {
             piece.ValidMoves |= 1 << (pos + colorDir * 7)
         }
-        if board[pos + colorDir * 8].Empty {
+        if board[pos + colorDir * 8].Kind == None {
             piece.ValidMoves |= 1 << (pos + colorDir * 8)
         }
     case Rook:
         //up
         for i := pos + 8; i < 64; i += 8 {
-            if board[i].Empty {
+            if board[i].Kind == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -93,7 +90,7 @@ func findValidMoves(board [64]Tile, pos int) {
         }
         //down
         for i := pos - 8; i >= 0; i -= 8 {
-            if board[i].Empty {
+            if board[i].Kind == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -102,7 +99,7 @@ func findValidMoves(board [64]Tile, pos int) {
         }
         //left
         for i := pos - 1; i >= 0; i -= 1 {
-            if board[i].Empty {
+            if board[i].Kind == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -111,7 +108,7 @@ func findValidMoves(board [64]Tile, pos int) {
         }
         //right
         for i := pos + 1; i >= 0; i += 1 {
-            if board[i].Empty {
+            if board[i].Kind == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -119,7 +116,9 @@ func findValidMoves(board [64]Tile, pos int) {
             }
         }
     case Knight:
-        if 
+        if piece {}
+    }
+}
 
 
 func drawPiece(piece Piece) {
@@ -160,16 +159,17 @@ func drawPiece(piece Piece) {
         } else {
             fmt.Print("\u265a")
         }
+    default: {}
     }
 }
 
-func drawBoard(board [64]Tile) {
-    for i, tile := range board {
+func drawBoard(board [64]Piece) {
+    for i, piece := range board {
         if i % 8 == 0 {
             fmt.Println()
         }
-        if !tile.Empty {
-            drawPiece(tile.Piece)
+        if piece.Kind != None {
+            drawPiece(piece)
         } else {
             fmt.Print(" ")
         }
@@ -177,71 +177,71 @@ func drawBoard(board [64]Tile) {
     }
 }
 
-func initBoard() [64]Tile {
-    var board [64]Tile
-    board[0] = Tile { Piece {Black, Rook, 0}, false }
-    board[1] = Tile { Piece {Black, Knight, 0}, false }
-    board[2] = Tile { Piece {Black, Bishop, 0}, false }
-    board[3] = Tile { Piece {Black, Queen, 0}, false }
-    board[4] = Tile { Piece {Black, King, 0}, false }
-    board[5] = Tile { Piece {Black, Bishop, 0}, false }
-    board[6] = Tile { Piece {Black, Knight, 0}, false }
-    board[7] = Tile { Piece {Black, Rook, 0}, false }
-    board[8] = Tile { Piece {Black, Pawn, 0}, false }
-    board[9] = Tile { Piece {Black, Pawn, 0}, false }
-    board[10] = Tile { Piece {Black, Pawn, 0}, false }
-    board[11] = Tile { Piece {Black, Pawn, 0}, false }
-    board[12] = Tile { Piece {Black, Pawn, 0}, false }
-    board[13] = Tile { Piece {Black, Pawn, 0}, false }
-    board[14] = Tile { Piece {Black, Pawn, 0}, false }
-    board[15] = Tile { Piece {Black, Pawn, 0}, false }
-    board[16] = Tile { Piece {Black, Pawn, 0}, true }
-    board[17] = Tile { Piece {Black, Pawn, 0}, true }
-    board[18] = Tile { Piece {Black, Pawn, 0}, true }
-    board[19] = Tile { Piece {Black, Pawn, 0}, true }
-    board[20] = Tile { Piece {Black, Pawn, 0}, true }
-    board[21] = Tile { Piece {Black, Pawn, 0}, true }
-    board[22] = Tile { Piece {Black, Pawn, 0}, true }
-    board[23] = Tile { Piece {Black, Pawn, 0}, true }
-    board[24] = Tile { Piece {Black, Pawn, 0}, true }
-    board[25] = Tile { Piece {Black, Pawn, 0}, true }
-    board[26] = Tile { Piece {Black, Pawn, 0}, true }
-    board[27] = Tile { Piece {Black, Pawn, 0}, true }
-    board[28] = Tile { Piece {Black, Pawn, 0}, true }
-    board[29] = Tile { Piece {Black, Pawn, 0}, true }
-    board[30] = Tile { Piece {Black, Pawn, 0}, true }
-    board[31] = Tile { Piece {Black, Pawn, 0}, true }
-    board[32] = Tile { Piece {Black, Pawn, 0}, true }
-    board[33] = Tile { Piece {Black, Pawn, 0}, true }
-    board[34] = Tile { Piece {Black, Pawn, 0}, true }
-    board[35] = Tile { Piece {Black, Pawn, 0}, true }
-    board[36] = Tile { Piece {Black, Pawn, 0}, true }
-    board[37] = Tile { Piece {Black, Pawn, 0}, true }
-    board[38] = Tile { Piece {Black, Pawn, 0}, true }
-    board[39] = Tile { Piece {Black, Pawn, 0}, true }
-    board[40] = Tile { Piece {Black, Pawn, 0}, true }
-    board[41] = Tile { Piece {Black, Pawn, 0}, true }
-    board[42] = Tile { Piece {Black, Pawn, 0}, true }
-    board[43] = Tile { Piece {Black, Pawn, 0}, true }
-    board[44] = Tile { Piece {Black, Pawn, 0}, true }
-    board[45] = Tile { Piece {Black, Pawn, 0}, true }
-    board[46] = Tile { Piece {Black, Pawn, 0}, true }
-    board[47] = Tile { Piece {Black, Pawn, 0}, true }
-    board[48] = Tile { Piece {White, Pawn, 0}, false }
-    board[49] = Tile { Piece {White, Pawn, 0}, false }
-    board[50] = Tile { Piece {White, Pawn, 0}, false }
-    board[51] = Tile { Piece {White, Pawn, 0}, false }
-    board[52] = Tile { Piece {White, Pawn, 0}, false }
-    board[53] = Tile { Piece {White, Pawn, 0}, false }
-    board[54] = Tile { Piece {White, Pawn, 0}, false }
-    board[55] = Tile { Piece {White, Pawn, 0}, false }
-    board[56] = Tile { Piece {White, Rook, 0}, false }
-    board[57] = Tile { Piece {White, Knight, 0}, false }
-    board[58] = Tile { Piece {White, Bishop, 0}, false }
-    board[59] = Tile { Piece {White, King, 0}, false }
-    board[60] = Tile { Piece {White, Queen, 0}, false }
-    board[61] = Tile { Piece {White, Bishop, 0}, false }
-    board[62] = Tile { Piece {White, Knight, 0}, false }
-    board[63] = Tile { Piece {White, Rook, 0}, false }
+func initBoard() [64]Piece {
+    var board [64]Piece
+    board[0] = Piece {Black, Rook, 0}
+    board[1] = Piece {Black, Knight, 0}
+    board[2] = Piece {Black, Bishop, 0}
+    board[3] = Piece {Black, Queen, 0}
+    board[4] = Piece {Black, King, 0}
+    board[5] = Piece {Black, Bishop, 0}
+    board[6] = Piece {Black, Knight, 0}
+    board[7] = Piece {Black, Rook, 0}
+    board[8] = Piece {Black, Pawn, 0}
+    board[9] = Piece {Black, Pawn, 0}
+    board[10] = Piece {Black, Pawn, 0}
+    board[11] = Piece {Black, Pawn, 0}
+    board[12] = Piece {Black, Pawn, 0}
+    board[13] = Piece {Black, Pawn, 0}
+    board[14] = Piece {Black, Pawn, 0}
+    board[15] = Piece {Black, Pawn, 0}
+    board[16] = Piece {Black, None, 0}
+    board[17] = Piece {Black, None, 0}
+    board[18] = Piece {Black, None, 0}
+    board[19] = Piece {Black, None, 0}
+    board[20] = Piece {Black, None, 0}
+    board[21] = Piece {Black, None, 0}
+    board[22] = Piece {Black, None, 0}
+    board[23] = Piece {Black, None, 0}
+    board[24] = Piece {Black, None, 0}
+    board[25] = Piece {Black, None, 0}
+    board[26] = Piece {Black, None, 0}
+    board[27] = Piece {Black, None, 0}
+    board[28] = Piece {Black, None, 0}
+    board[29] = Piece {Black, None, 0}
+    board[30] = Piece {Black, None, 0}
+    board[31] = Piece {Black, None, 0}
+    board[32] = Piece {Black, None, 0}
+    board[33] = Piece {Black, None, 0}
+    board[34] = Piece {Black, None, 0}
+    board[35] = Piece {Black, None, 0}
+    board[36] = Piece {Black, None, 0}
+    board[37] = Piece {Black, None, 0}
+    board[38] = Piece {Black, None, 0}
+    board[39] = Piece {Black, None, 0}
+    board[40] = Piece {Black, None, 0}
+    board[41] = Piece {Black, None, 0}
+    board[42] = Piece {Black, None, 0}
+    board[43] = Piece {Black, None, 0}
+    board[44] = Piece {Black, None, 0}
+    board[45] = Piece {Black, None, 0}
+    board[46] = Piece {Black, None, 0}
+    board[47] = Piece {Black, None, 0}
+    board[48] = Piece {White, Pawn, 0}
+    board[49] = Piece {White, Pawn, 0}
+    board[50] = Piece {White, Pawn, 0}
+    board[51] = Piece {White, Pawn, 0}
+    board[52] = Piece {White, Pawn, 0}
+    board[53] = Piece {White, Pawn, 0}
+    board[54] = Piece {White, Pawn, 0}
+    board[55] = Piece {White, Pawn, 0}
+    board[56] = Piece {White, Rook, 0}
+    board[57] = Piece {White, Knight, 0}
+    board[58] = Piece {White, Bishop, 0}
+    board[59] = Piece {White, King, 0}
+    board[60] = Piece {White, Queen, 0}
+    board[61] = Piece {White, Bishop, 0}
+    board[62] = Piece {White, Knight, 0}
+    board[63] = Piece {White, Rook, 0}
     return board
 }
