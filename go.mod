@@ -1,3 +1,3 @@
-module todo
+module go-chess
 
 go 1.22.5

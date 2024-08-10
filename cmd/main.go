@@ -21,14 +21,14 @@ const (
     Bishop
     Queen
     King
-    None
 )
 
-type Color bool
+type Color int
 
 const (
-    White Color = true
-    Black Color = false
+    White Color = iota
+    Black
+    None
 )
 
 func main() {
@@ -39,10 +39,10 @@ func main() {
 }
 
 func (player Color) movePiece(board *[64]Piece, pos int, newPos int) {
-    if board[pos].Kind != None && board[pos].Color == player {
+    if board[pos].Color != None && board[pos].Color == player {
         if (board[pos].ValidMoves & (1 << newPos)) > 0 {
             board[newPos] = board[pos]
-            board[pos].Kind = None
+            board[pos].Color = None
         } else {
             fmt.Print("1")
         }
@@ -59,29 +59,29 @@ func findValidMoves(board [64]Piece, pos int) {
     case Pawn:
         //TODO: passant
         var colorDir int
-        if piece.Color {
+        if piece.Color == White {
             colorDir = 1
-        } else {
+        } else if piece.Color == Black {
             colorDir = -1
         }
-        if piece.Color == White && pos > 7 && pos < 16 && board[pos + 16].Kind == None {
+        if piece.Color == White && pos > 7 && pos < 16 && board[pos + 16].Color == None {
             piece.ValidMoves |= 1 << (pos + 16)
-        } else if piece.Color == Black && pos > 47 && pos < 56 && board[pos - 16].Kind == None {
+        } else if piece.Color == Black && pos > 47 && pos < 56 && board[pos - 16].Color == None {
             piece.ValidMoves |= 1 << (pos - 16)
         }
-        if board[pos + colorDir * 9].Kind != None && (pos + colorDir * 9) % 8 != 0 && piece.Color != board[pos + colorDir * 9].Color {
+        if board[pos + colorDir * 9].Color != None && (pos + colorDir * 9) % 8 != 0 && piece.Color != board[pos + colorDir * 9].Color {
             piece.ValidMoves |= 1 << (pos + colorDir * 9)
         }
-        if board[pos + colorDir * 9].Kind != None && pos % 8 != 0 && piece.Color != board[pos + colorDir * 7].Color {
+        if board[pos + colorDir * 9].Color != None && pos % 8 != 0 && piece.Color != board[pos + colorDir * 7].Color {
             piece.ValidMoves |= 1 << (pos + colorDir * 7)
         }
-        if board[pos + colorDir * 8].Kind == None {
+        if board[pos + colorDir * 8].Color == None {
             piece.ValidMoves |= 1 << (pos + colorDir * 8)
         }
     case Rook:
         //up
         for i := pos + 8; i < 64; i += 8 {
-            if board[i].Kind == None {
+            if board[i].Color == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -90,7 +90,7 @@ func findValidMoves(board [64]Piece, pos int) {
         }
         //down
         for i := pos - 8; i >= 0; i -= 8 {
-            if board[i].Kind == None {
+            if board[i].Color == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -99,7 +99,7 @@ func findValidMoves(board [64]Piece, pos int) {
         }
         //left
         for i := pos - 1; i >= 0; i -= 1 {
-            if board[i].Kind == None {
+            if board[i].Color == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -108,7 +108,7 @@ func findValidMoves(board [64]Piece, pos int) {
         }
         //right
         for i := pos + 1; i >= 0; i += 1 {
-            if board[i].Kind == None {
+            if board[i].Color == None {
                 piece.ValidMoves |= 1 << (i)
             } else if board[i].Color != piece.Color {
                 piece.ValidMoves |= 1 << (i)
@@ -116,7 +116,7 @@ func findValidMoves(board [64]Piece, pos int) {
             }
         }
     case Knight:
-        if piece {}
+        if pos +  {}
     }
 }
 
@@ -168,7 +168,7 @@ func drawBoard(board [64]Piece) {
         if i % 8 == 0 {
             fmt.Println()
         }
-        if piece.Kind != None {
+        if piece.Color != None {
             drawPiece(piece)
         } else {
             fmt.Print(" ")
@@ -195,38 +195,38 @@ func initBoard() [64]Piece {
     board[13] = Piece {Black, Pawn, 0}
     board[14] = Piece {Black, Pawn, 0}
     board[15] = Piece {Black, Pawn, 0}
-    board[16] = Piece {Black, None, 0}
-    board[17] = Piece {Black, None, 0}
-    board[18] = Piece {Black, None, 0}
-    board[19] = Piece {Black, None, 0}
-    board[20] = Piece {Black, None, 0}
-    board[21] = Piece {Black, None, 0}
-    board[22] = Piece {Black, None, 0}
-    board[23] = Piece {Black, None, 0}
-    board[24] = Piece {Black, None, 0}
-    board[25] = Piece {Black, None, 0}
-    board[26] = Piece {Black, None, 0}
-    board[27] = Piece {Black, None, 0}
-    board[28] = Piece {Black, None, 0}
-    board[29] = Piece {Black, None, 0}
-    board[30] = Piece {Black, None, 0}
-    board[31] = Piece {Black, None, 0}
-    board[32] = Piece {Black, None, 0}
-    board[33] = Piece {Black, None, 0}
-    board[34] = Piece {Black, None, 0}
-    board[35] = Piece {Black, None, 0}
-    board[36] = Piece {Black, None, 0}
-    board[37] = Piece {Black, None, 0}
-    board[38] = Piece {Black, None, 0}
-    board[39] = Piece {Black, None, 0}
-    board[40] = Piece {Black, None, 0}
-    board[41] = Piece {Black, None, 0}
-    board[42] = Piece {Black, None, 0}
-    board[43] = Piece {Black, None, 0}
-    board[44] = Piece {Black, None, 0}
-    board[45] = Piece {Black, None, 0}
-    board[46] = Piece {Black, None, 0}
-    board[47] = Piece {Black, None, 0}
+    board[16] = Piece {None, Pawn, 0}
+    board[17] = Piece {None, Pawn, 0}
+    board[18] = Piece {None, Pawn, 0}
+    board[19] = Piece {None, Pawn, 0}
+    board[20] = Piece {None, Pawn, 0}
+    board[21] = Piece {None, Pawn, 0}
+    board[22] = Piece {None, Pawn, 0}
+    board[23] = Piece {None, Pawn, 0}
+    board[24] = Piece {None, Pawn, 0}
+    board[25] = Piece {None, Pawn, 0}
+    board[26] = Piece {None, Pawn, 0}
+    board[27] = Piece {None, Pawn, 0}
+    board[28] = Piece {None, Pawn, 0}
+    board[29] = Piece {None, Pawn, 0}
+    board[30] = Piece {None, Pawn, 0}
+    board[31] = Piece {None, Pawn, 0}
+    board[32] = Piece {None, Pawn, 0}
+    board[33] = Piece {None, Pawn, 0}
+    board[34] = Piece {None, Pawn, 0}
+    board[35] = Piece {None, Pawn, 0}
+    board[36] = Piece {None, Pawn, 0}
+    board[37] = Piece {None, Pawn, 0}
+    board[38] = Piece {None, Pawn, 0}
+    board[39] = Piece {None, Pawn, 0}
+    board[40] = Piece {None, Pawn, 0}
+    board[41] = Piece {None, Pawn, 0}
+    board[42] = Piece {None, Pawn, 0}
+    board[43] = Piece {None, Pawn, 0}
+    board[44] = Piece {None, Pawn, 0}
+    board[45] = Piece {None, Pawn, 0}
+    board[46] = Piece {None, Pawn, 0}
+    board[47] = Piece {None, Pawn, 0}
     board[48] = Piece {White, Pawn, 0}
     board[49] = Piece {White, Pawn, 0}
     board[50] = Piece {White, Pawn, 0}
